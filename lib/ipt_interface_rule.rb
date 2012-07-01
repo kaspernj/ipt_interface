@@ -61,12 +61,21 @@ class Ipt_interface::Rule
         end
       end
       
+      mode = nil
       expect = 0
       output.scan(/Entry (\d+) \((\d+)\):([\s\S]+?)\n\n/) do |match|
         entry = match[0].to_i
         
         #It is allowed to reset entry to 0, because the prerouting table will do so.
         if entry == 0
+          if mode == nil
+            mode = :normal
+          elsif mode == :normal
+            mode = :nat
+          else
+            raise "Unknown next mode from: #{mode}"
+          end
+          
           expect = 0
         end
         
@@ -106,13 +115,17 @@ class Ipt_interface::Rule
           data[key] = val
         end
         
+        if !data.key?(:id)
+          data[:id] = "entry_#{mode}_#{data[:entry]}"
+        end
+        
         if rule = @@list.get!(entry)
           rule.data = data
         else
           rule = Ipt_interface::Rule.new
           rule.data = data
           
-          @@list[entry] = rule
+          @@list[data[:id]] = rule
         end
         
         yielder << rule
@@ -129,25 +142,16 @@ class Ipt_interface::Rule
   end
   
   def self.by_entry(entry)
-    entry = entry.to_i
-    
-    if rule = @@list.get!(entry)
-      return rule
-    end
-    
-    self.list do |rule|
-      return rule if rule.entry == entry
-    end
-    
-    raise sprintf(_("Could not find a rule by that entry: '%s'."), entry)
+    return self.by(:entry => entry.to_i)
   end
   
   def self.by(args)
-    @@list.each do |rule|
+    #Check weak map.
+    @@list.each do |id, rule|
       found = true
       
       args.each do |key, val|
-        if args.data[key] != val
+        if rule.data[key] != val
           found = false
           break
         end
@@ -156,11 +160,12 @@ class Ipt_interface::Rule
       return rule if found
     end
     
+    #Go through list.
     self.list do |rule|
       found = true
       
       args.each do |key, val|
-        if args.data[key] != val
+        if rule.data[key] != val
           found = false
           break
         end
@@ -169,6 +174,7 @@ class Ipt_interface::Rule
       return rule if found
     end
     
+    #Not found.
     raise sprintf(_("Could not find a rule by that data: '%s'."), "#{args}")
   end
   

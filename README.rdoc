@@ -1,6 +1,12 @@
 = ipt_interface
 
-Description goes here.
+After installation the interface can be started from a shell like this:
+ ruby -e "require 'rubygems'; require 'ipt_interface'; Ipt_interface.quick_start(:port => 8081)"
+
+Then start a browser with the following URL:
+ localhost:8081
+
+I useually start it on a server and then use SSH forwarding to access the interface. Then I stop the interface, when I am not using it.
 
 == Contributing to ipt_interface
  
