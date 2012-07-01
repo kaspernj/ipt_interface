@@ -190,7 +190,9 @@ class Ipt_interface::Rule
     return @data[:entry]
   end
   
-  alias id entry
+  def id
+    return @data[:id]
+  end
   
   def iface_in
     return @data[:iface_in]
@@ -223,10 +225,18 @@ class Ipt_interface::Rule
   end
   
   def name
-    if @data.key?(:chain) and @data.key?(:no)
-      return "#{@data[:chain].to_s[0].upcase}#{@data[:chain].to_s[1, @data[:chain].length]} #{@data[:no]}"
+    descr = self.descr
+    
+    if descr
+      descr = " (#{descr})"
     else
-      return sprintf(_("Entry %s"), self.entry)
+      descr = ""
+    end
+    
+    if @data.key?(:chain) and @data.key?(:no)
+      return "#{@data[:chain].to_s[0].upcase}#{@data[:chain].to_s[1, @data[:chain].length]} #{@data[:no]}#{descr}"
+    else
+      return sprintf(_("Entry %s"), self.entry) + descr
     end
   end
   
@@ -234,8 +244,44 @@ class Ipt_interface::Rule
     return Knj::Web.html(self.name)
   end
   
-  def html
-    return "<a href=\"#{Knj::Web.ahref_parse(self.url)}\">#{self.name_html}</a>"
+  def html(args = {})
+    args[:title] = self.name if !args[:title]
+    return "<a href=\"#{Knj::Web.ahref_parse(self.url)}\">#{Knj::Web.html(args[:title])}</a>"
+  end
+  
+  def term(args)
+    return Knj::ArrayExt.array_hash_find(:arr => @data[:terms], :args => args) if @data[:terms]
+  end
+  
+  def action(args)
+    return Knj::ArrayExt.array_hash_find(:arr => @data[:actions], :args => args) if @data[:actions]
+  end
+  
+  #Tries to guess a comon human readable description of the rule.
+  def descr
+    term_proto = self.term(:type => :protocol)
+    term_dport = self.term(:type => :destination_port)
+    
+    if term_proto and term_dport
+      port_descr = "#{term_proto[:protocol].to_s.upcase} #{term_dport[:port]}"
+    elsif term_dport
+      port_descr = term_dport[:port]
+    end
+    
+    if @data[:chain] == :prerouting and @data[:target] == :dnat and !@data[:actions].empty? and term_dport and act_to = self.action(:type => :to)
+      #Description based on term-protocol, term-destination-port and action-to.
+      if term_dport[:port] == act_to[:port]
+        to_descr = act_to[:ip]
+      else
+        to_descr = "#{act_to[:ip]}:#{act_to[:port]}"
+      end
+      
+      return sprintf(_("Forward from port %1$s to %2$s"), port_descr, to_descr)
+    elsif data[:chain] == :input and data[:target] == :accept and term_dport
+      return sprintf(_("Accept input on port %1$s"), port_descr)
+    end
+    
+    return nil
   end
   
   #Deletes the rule from the chain.

@@ -22,7 +22,8 @@ th{
 
 div.main{
   margin: 0 auto 0 auto;
-  width: 1000px;
+  width: 1200px;
+  min-height: 600px;
   border: 1px solid #000000;
   border-radius: 8px;
   background-color: #ffffff;

@@ -1,5 +1,5 @@
 <%
-  rule = Ipt_interface::Rule.by_entry(_get["rule_id"])
+  rule = Ipt_interface::Rule.by(:id => _get["rule_id"])
   
   print _site.header(sprintf(_("Show rule: %s"), rule.name_html))
 %>

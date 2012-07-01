@@ -1,6 +1,6 @@
 <%
   if _get["choice"] == "dodelete"
-    rule = Ipt_interface::Rule.by_entry(_get["rule_id"])
+    rule = Ipt_interface::Rule.by(:id => _get["rule_id"])
     rule.delete
     _kas.redirect("?show=rules")
   end
@@ -12,7 +12,7 @@
   <table class="list">
     <thead>
       <tr>
-        <th><%=_"No."%></th>
+        <th><%=_"Description"%></th>
         <th><%=sprintf(_("Iface %s"), _("in"))%></th>
         <th><%=sprintf(_("Iface %s"), _("out"))%></th>
         <th><%=_"Src."%></th>
@@ -27,10 +27,15 @@
         Ipt_interface::Rule.list do |rule|
           count += 1
           
+          descr = rule.descr
+          if !descr
+            descr = rule.name
+          end
+          
           %>
             <tr>
               <td>
-                <%=rule.html%>
+                <%=rule.html(:title => descr)%>
               </td>
               <td>
                 <%=Knj::Web.html(rule.iface_in)%>
@@ -48,7 +53,7 @@
                 <%=Knj::Web.html(rule.protocol)%>
               </td>
               <td>
-                (<a href="javascript: if (confirm('<%=_"Are you sure?"%>')){location.href='?show=rules&amp;choice=dodelete&amp;rule_id=<%=rule.entry%>';}"><%=_"delete"%></a>)
+                (<a href="javascript: if (confirm('<%=_"Are you sure?"%>')){location.href='?show=rules&amp;choice=dodelete&amp;rule_id=<%=rule.id%>';}"><%=_"delete"%></a>)
               </td>
             </tr>
           <%
