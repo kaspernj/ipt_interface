@@ -119,7 +119,7 @@ class Ipt_interface::Rule
           data[:id] = "entry_#{mode}_#{data[:entry]}"
         end
         
-        if rule = @@list.get!(entry)
+        if rule = @@list.get!(data[:id])
           rule.data = data
         else
           rule = Ipt_interface::Rule.new
