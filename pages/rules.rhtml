@@ -1,0 +1,69 @@
+<%
+  if _get["choice"] == "dodelete"
+    rule = Ipt_interface::Rule.by_entry(_get["rule_id"])
+    rule.delete
+    _kas.redirect("?show=rules")
+  end
+  
+  print _site.header(_("Rules"))
+%>
+
+<%=_site.boxt(_("List"), 500)%>
+  <table class="list">
+    <thead>
+      <tr>
+        <th><%=_"No."%></th>
+        <th><%=sprintf(_("Iface %s"), _("in"))%></th>
+        <th><%=sprintf(_("Iface %s"), _("out"))%></th>
+        <th><%=_"Src."%></th>
+        <th><%=_"Dst."%></th>
+        <th><%=_"Protocol"%></th>
+        <th><%=_"Actions"%></th>
+      </tr>
+    </thead>
+    <tbody>
+      <%
+        count = 0
+        Ipt_interface::Rule.list do |rule|
+          count += 1
+          
+          %>
+            <tr>
+              <td>
+                <%=rule.html%>
+              </td>
+              <td>
+                <%=Knj::Web.html(rule.iface_in)%>
+              </td>
+              <td>
+                <%=Knj::Web.html(rule.iface_out)%>
+              </td>
+              <td>
+                <%=Knj::Web.html(rule.src_ip)%>
+              </td>
+              <td>
+                <%=Knj::Web.html(rule.dst_ip)%>
+              </td>
+              <td>
+                <%=Knj::Web.html(rule.protocol)%>
+              </td>
+              <td>
+                (<a href="javascript: if (confirm('<%=_"Are you sure?"%>')){location.href='?show=rules&amp;choice=dodelete&amp;rule_id=<%=rule.entry%>';}"><%=_"delete"%></a>)
+              </td>
+            </tr>
+          <%
+        end
+        
+        if count <= 0
+          %>
+            <tr>
+              <td colspan="1" class="error">
+                <%=_"No rules were found."%>
+              </td>
+            </tr>
+          <%
+        end
+      %>
+    </tbody>
+  </table>
+<%=_site.boxb%>

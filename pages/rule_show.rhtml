@@ -1,0 +1,9 @@
+<%
+  rule = Ipt_interface::Rule.by_entry(_get["rule_id"])
+  
+  print _site.header(sprintf(_("Show rule: %s"), rule.name_html))
+%>
+
+<%=_site.boxt(_("Rule data"), 500)%>
+<pre><%=Knj.p(rule.data, true)%></pre>
+<%=_site.boxb%>

@@ -1,0 +1,46 @@
+<%
+  if !_get["show"].to_s.empty?
+    show = _get["show"]
+  else
+    show = "frontpage"
+  end
+  
+  showp = "../pages/#{show}.rhtml"
+%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Iptables Interface</title>
+  
+  <link rel="stylesheet" type="text/css" href="css/default.css" />
+  
+  <script src="js/default.js"></script>
+</head>
+<body>
+  <div class="main">
+    <div class="logo">
+      Iptables Interface
+    </div>
+    <div class="menu">
+      <%
+        menu = [
+          {:title => _("Rules"), :link => "?show=rules"}
+        ]
+        
+        menu.each do |menu_i|
+          %>
+            <div>
+              <a href="<%=Knj::Web.ahref_parse(menu_i[:link])%>"><%=Knj::Web.html(menu_i[:title])%></a>
+            </div>
+          <%
+        end
+      %>
+    </div>
+    <div class="content">
+      <%
+        _kas.import(showp)
+      %>
+    </div>
+  </div>
+</body>
+</html>
