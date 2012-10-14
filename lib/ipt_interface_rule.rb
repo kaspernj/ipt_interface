@@ -288,6 +288,21 @@ class Ipt_interface::Rule
   def delete
     raise "No chain on rule - cant identify it." if !@data.key?(:chain)
     raise "No chain-number on rule - cant identify it." if !@data.key?(:no)
-    %x[iptables -D #{@data[:chain].to_s.upcase} #{@data[:no]}]
+    
+    begin
+      if @data[:chain] == :prerouting
+        cmd = "iptables -t nat"
+      else
+        cmd = "iptables"
+      end
+      
+      cmd << " -D #{@data[:chain].to_s.upcase} #{@data[:no]}"
+      
+      Knj::Os.shellcmd(cmd)
+    rescue
+      puts "CMD: #{cmd}\n"
+      Knj.p @data
+      raise
+    end
   end
 end
