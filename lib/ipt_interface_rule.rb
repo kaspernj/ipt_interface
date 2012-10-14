@@ -14,7 +14,7 @@ class Ipt_interface::Rule
           cname = match[0].downcase.to_sym
           
           expect = 0
-          match[1].scan(/^(\d+)\s+([\dKMTG]+)\s+([\dKMTG]+?)\s+([A-Z]+?)\s+([a-z]+?)\s+(\S+)\s+(\S+)\s+(\S+)\s+([\d\.\/]+)\s+([\d\.\/]+)\s+?(.*?)$/) do |match_rule|
+          match[1].scan(/^(\d+)\s+([\dKMTG]+)\s+([\dKMTG]+?)\s+([A-z\-]+?)\s+([a-z]+?)\s+(\S+)\s+(\S+)\s+(\S+)\s+([\d\.\/]+)\s+([\d\.\/]+)\s+?(.*?)$/) do |match_rule|
             expect += 1
             no = match_rule[0].to_i
             
@@ -97,16 +97,16 @@ class Ipt_interface::Rule
             data["#{key}_ip".to_sym] = val.split("/")[0]
             data["#{key}_mask".to_sym] = val.split("/")[1]
           elsif key == :interface and match_iface = val.match(/^`(.+?)'/) and match_iface[1][1] != "/"
-            #If interface is already given, check that it is the same on the matched text, to be sure it isnt the wrong rule.
+            #If interface is already given, check that it is the same on the matched text, to be sure it isn't the wrong rule.
             if data[:iface] and data[:iface].to_s != match_iface[1]
               raise "Interface doesnt match: #{data[:iface]} vs #{match_iface[1]}."
             end
             
             data[:iface] = match_iface[1].to_sym
           elsif key == :match_name and match_name = val.match(/^`(.+?)'/)
-            #If protocol is already given, check that it is the same on the matched text, to be sure it isnt the wrong rule.
+            #If protocol is already given, check that it is the same on the matched text, to be sure it isn't the wrong rule.
             if match_name[1] == "udp" or match_name[1] == "tcp" and data[:protocol_text] and match_name[1] != data[:protocol_text].to_s
-              raise sprintf(_("Protocol does not match matc-name: '%1$s', '%2$s'.") + " #{match_prop} #{data} #{val}", match_name[1], data[:protocol_text])
+              raise sprintf(Ipt_interface._("Protocol does not match matc-name: '%1$s', '%2$s'.") + " #{match_prop} #{data} #{val}", match_name[1], data[:protocol_text])
             end
             
             data[:protocol_text] = match_name[1].downcase.to_sym if !data[:protocol_text]

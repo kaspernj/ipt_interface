@@ -10,6 +10,14 @@ class Ipt_interface
     return Ipt_interface.const_get(name)
   end
   
+  def self._(str)
+    begin
+      return Kernel._(str)
+    rescue NameError
+      return str
+    end
+  end
+  
   def initialize(args)
     require "rubygems"
     
